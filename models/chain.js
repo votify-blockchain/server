@@ -68,7 +68,7 @@ class Chain {
     }
 
     let position = this.tableOfContent[action.lock];
-
+    console.log(position);
     if (position === undefined) {
       return false;
     }
@@ -209,6 +209,17 @@ class Chain {
     return { data: this.blocks[action.block].actions[action.index].data };
   }
 
+  
+  /**
+   *
+   * @param {string} actionId
+   */
+   getTableOfContent() {
+    return this.tableOfContent
+  }
+   getNode() {
+    return this.nodes
+  }
   mineBlock(block) {
     this.blocksBuffer = block;
     this.confirm++;

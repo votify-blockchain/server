@@ -12,7 +12,7 @@ const { actions } = require("./utils/constants");
 
 const socketListeners = require("./socketListeners");
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 
 var nodeList = [];
 var status = false;
@@ -25,10 +25,12 @@ app.use(bodyParser.json());
 app.post("/nodes", (req, res) => {
   const { host } = req.body;
   const { callback, nodeLength } = req.query;
-  const node = `https://${host}`;
+  const node = `http://${host}`;
+  console.log({node});
   const socketNode = socketListeners(io, client(node), blockChain);
   nodeList.push({ node, id: socketNode.id });
   blockChain.addNode(socketNode);
+  console.log('hostname: ', req.hostname);
   if (callback === "true") {
     if (parseInt(nodeLength) > 1 && nodeList.length === 1) {
       axios.post(`${node}/request-list`, {
@@ -52,7 +54,7 @@ app.post("/nodes", (req, res) => {
 
 app.post("/action", (req, res) => {
   const { type, data, signature, lock } = req.body;
-  console.log(req.body);
+  console.log('/action', req.body);
   let clientAction = new Action(type, data, signature, lock);
   if (blockChain.verifyAction(clientAction)) {
     res.json({ status: "valid", id: clientAction.id });
@@ -64,6 +66,14 @@ app.post("/action", (req, res) => {
   } else {
     res.json({ status: "invalid", id: null });
   }
+});
+
+app.get("/tableOfContent", (req, res) => {
+  res.json(blockChain.getTableOfContent());
+});
+
+app.get("/node", (req, res) => {
+  res.json(blockChain.getNode());
 });
 
 app.get("/action/:id", (req, res) => {
@@ -152,7 +162,7 @@ app.post("/extentelection", (req, res) => {
 app.post("/update-list", (req, res) => {
   const { requestNodeList } = req.body;
   const currentNode = `https://${req.hostname}`;
-  console.log(currentNode);
+  console.log({currentNode});
 
   for (let index = 0; index < requestNodeList.length; index++) {
     if (requestNodeList[index].node !== currentNode) {
